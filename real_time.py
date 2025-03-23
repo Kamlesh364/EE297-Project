@@ -42,64 +42,64 @@ os.makedirs(f"{DOWNLOADS_FOLDER}", exist_ok=True)
 app = Flask(__name__)
 app.secret_key = 'ee_267_sjsu$2024'
 
-# connect to the database
-from yaml import safe_load
-def load_db_config(filename="db_config.yaml"):
-    with open(filename, "r") as file:
-        config = safe_load(file)
-    return config["database"]
+# # connect to the database
+# from yaml import safe_load
+# def load_db_config(filename="db_config.yaml"):
+#     with open(filename, "r") as file:
+#         config = safe_load(file)
+#     return config["database"]
 
-conn = None
-cur = None
-# def connect_db():
-# Load credentials
-db_params = load_db_config()
-try:
-    conn = pg.connect(**db_params)
-    cur = conn.cursor(cursor_factory=DictCursor)
-    print(conn, cur)
-    print("Connected to the database successfully!")
-    # Create table if it does not exist
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS detections (
-            id SERIAL PRIMARY KEY,
-            image_name VARCHAR(255),
-            boxes BYTEA,
-            labels BYTEA,
-            conf BYTEA,
-            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
-    """)
+# conn = None
+# cur = None
+# # def connect_db():
+# # Load credentials
+# db_params = load_db_config()
+# try:
+#     conn = pg.connect(**db_params)
+#     cur = conn.cursor(cursor_factory=DictCursor)
+#     print(conn, cur)
+#     print("Connected to the database successfully!")
+#     # Create table if it does not exist
+#     cur.execute("""
+#         CREATE TABLE IF NOT EXISTS detections (
+#             id SERIAL PRIMARY KEY,
+#             image_name VARCHAR(255),
+#             boxes BYTEA,
+#             labels BYTEA,
+#             conf BYTEA,
+#             timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+#         );
+#     """)
     
-    conn.commit()  # Commit table creation
-except Exception as e:
-    print("Error:", e)
+#     conn.commit()  # Commit table creation
+# except Exception as e:
+#     print("Error:", e)
     
-def store_detection_data(image_name, boxes, labels, conf):
-    global conn, cur  # Use global variables
+# def store_detection_data(image_name, boxes, labels, conf):
+#     global conn, cur  # Use global variables
 
-    # Convert NumPy arrays to byte format
-    def array_to_bytes(array):
-        buf = io.BytesIO()
-        np.save(buf, array)
-        buf.seek(0)
-        return buf.read()
+#     # Convert NumPy arrays to byte format
+#     def array_to_bytes(array):
+#         buf = io.BytesIO()
+#         np.save(buf, array)
+#         buf.seek(0)
+#         return buf.read()
 
-    # Convert all three arrays to bytes
-    boxes_bytes = array_to_bytes(boxes)
-    labels_bytes = array_to_bytes(labels)
-    conf_bytes = array_to_bytes(conf)
+#     # Convert all three arrays to bytes
+#     boxes_bytes = array_to_bytes(boxes)
+#     labels_bytes = array_to_bytes(labels)
+#     conf_bytes = array_to_bytes(conf)
 
-    # Insert the data into the database
-    cur.execute("""
-        INSERT INTO detections (image_name, boxes, labels, conf)
-        VALUES (%s, %s, %s, %s);
-    """, (image_name, boxes_bytes, labels_bytes, conf_bytes))
+#     # Insert the data into the database
+#     cur.execute("""
+#         INSERT INTO detections (image_name, boxes, labels, conf)
+#         VALUES (%s, %s, %s, %s);
+#     """, (image_name, boxes_bytes, labels_bytes, conf_bytes))
 
-    conn.commit()
-    # Print the number of rows inserted
-    print(f"Inserted {cur.rowcount} row(s) into the detections")
-    return
+#     conn.commit()
+#     # Print the number of rows inserted
+#     print(f"Inserted {cur.rowcount} row(s) into the detections")
+#     return
 
 # @app.teardown_appcontext
 # def close_db(error=None):
@@ -110,17 +110,17 @@ def store_detection_data(image_name, boxes, labels, conf):
 #         print("Database connection closed.")
 
 
-# Register signal handlers for graceful shutdown
-def shutdown_signal_handler(signal, frame):
-    print("Shutting down gracefully...")
-    if conn is not None:
-        cur.close()
-        conn.close()
-    exit(0)
+# # Register signal handlers for graceful shutdown
+# def shutdown_signal_handler(signal, frame):
+#     print("Shutting down gracefully...")
+#     if conn is not None:
+#         cur.close()
+#         conn.close()
+#     exit(0)
 
-# Register the signal handler for SIGINT (Ctrl+C) and SIGTERM (termination signal)
-signal.signal(signal.SIGINT, shutdown_signal_handler)
-signal.signal(signal.SIGTERM, shutdown_signal_handler)
+# # Register the signal handler for SIGINT (Ctrl+C) and SIGTERM (termination signal)
+# signal.signal(signal.SIGINT, shutdown_signal_handler)
+# signal.signal(signal.SIGTERM, shutdown_signal_handler)
 
 
 @app.route("/")
@@ -161,9 +161,9 @@ def predict_img():
                     os.makedirs(f"{PROJECT_PATH}/{imgpath}")
 
                 if file_extension in IMG_FORMATS:
-                    if conn == None or cur == None:
-                        flash("Error connecting to the database!")
-                        return render_template('index.html')
+                    # if conn == None or cur == None:
+                    #     flash("Error connecting to the database!")
+                    #     return render_template('index.html')
                     its_image = True
                     frame = cv2.imread(filepath)
                     if frame is None:
@@ -180,7 +180,7 @@ def predict_img():
                         boxes = results[0].boxes.cpu().numpy().xyxy.astype(int)
                         labels = results[0].boxes.cpu().numpy().cls
                         conf = results[0].boxes.cpu().numpy().conf
-                        store_detection_data(f.filename, boxes, labels, conf)
+                        # store_detection_data(f.filename, boxes, labels, conf)
                         for box, label, conf in zip(boxes, labels, conf):
                             x1, y1, x2, y2 = box
                             cv2.rectangle(frame, (x1, y1), (x2, y2), COLORS[int(label)], 4)
