@@ -78,7 +78,7 @@ To run the Object Detection Web Application locally, follow these steps:
 1. Start the Flask app:
 
    ```bash
-   python3 real-time.py
+   python3 real_time.py
    ```
 
 2. Open a web browser and navigate to `http://localhost:8000` to access the application.
